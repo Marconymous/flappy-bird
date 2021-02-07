@@ -149,13 +149,13 @@ public class Game extends Application {
         gc.setFill(ORANGE);
         gc.fillPolygon(new double[]{CANVASWIDTH / 2 + 20, CANVASWIDTH / 2 + 20, CANVASWIDTH / 2 + 40}, new double[]{b.getY() + 5, b.getY() + 18, b.getY() + 11.5}, 3);
         gc.setFill(YELLOW);
-        gc.fillOval(CANVASWIDTH / 2, b.getY(), 30, 20);
+        gc.fillOval(CANVASWIDTH / 2, b.getY(), CANVASWIDTH / 26, CANVASHEIGHT / 30);
         gc.setFill(WHITE);
-        gc.fillOval(CANVASWIDTH / 2 + 15, b.getY() + 5, 10, 10);
+        gc.fillOval(CANVASWIDTH / 2 + CANVASWIDTH / 53, b.getY() + CANVASHEIGHT / 120, CANVASWIDTH / 80, CANVASHEIGHT / 60);
         gc.setFill(BLACK);
-        gc.fillOval(CANVASWIDTH / 2 + 18, b.getY() + 8, 5, 5);
+        gc.fillOval(CANVASWIDTH / 2 + CANVASWIDTH / 44, b.getY() + CANVASHEIGHT / 75, CANVASWIDTH / 160, CANVASHEIGHT / 120);
         gc.setFill(WHITE);
-        gc.fillOval(CANVASWIDTH / 2 - 5, b.getY() + 10, 10, 5);
+        gc.fillOval(CANVASWIDTH / 2 - CANVASWIDTH / 160, b.getY() + CANVASHEIGHT / 60, CANVASWIDTH / 80, CANVASHEIGHT / 120);
 
 
         // Points

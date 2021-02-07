@@ -6,9 +6,9 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -17,30 +17,35 @@ import java.util.ArrayList;
 import static javafx.scene.paint.Color.*;
 
 public class Game extends Application {
-    public static final float BIRDSPEED = 2;
-    public static final float TUBEWIDTH = 150;
+    private static final float CANVASWIDTH = 800;
+    private static final float CANVASHEIGHT = 600;
+    private static final float BIRDSPEED = CANVASHEIGHT / 200;
+    private static final float TUBEWIDTH = BIRDSPEED * 50;
 
     private Bird b;
-    private BorderPane root = new BorderPane();
     private Canvas canvas;
     private GraphicsContext gc;
     private ArrayList<Tube> tubes;
     private int points;
+    private final BorderPane root = new BorderPane();
+    private final StackPane stack = new StackPane();
 
-    private Timeline animation = new Timeline(new KeyFrame(Duration.millis(5), kf -> {
-        update();
-    }));
+    private final Timeline animation = new Timeline(new KeyFrame(Duration.millis(5), kf -> update()));
+
+    public Game() {
+        root.setCenter(stack);
+    }
 
     @Override
     public void start(Stage primaryStage) {
         cleanup();
-        root.setCenter(canvas);
+        stack.getChildren().add(canvas);
         animation.setCycleCount(Animation.INDEFINITE);
         animation.play();
 
         generateTube();
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, CANVASWIDTH, CANVASHEIGHT);
 
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -50,24 +55,30 @@ public class Game extends Application {
 
     private void update() {
         for (int i = 0; i < tubes.size(); i++) {
-            if (tubes.get(i).getX() + TUBEWIDTH <= 0) tubes.remove(i);
-            else if (tubes.get(i).getX() <= 100 && tubes.size() < 2) generateTube();
+            if (tubes.get(i).getX() + TUBEWIDTH <= 0) {
+                tubes.remove(i);
+                System.out.println("Tube was removed");
+            } else if (tubes.get(i).getX() <= CANVASWIDTH / 8 && tubes.size() < 2) {
+                generateTube();
+            }
         }
 
         move();
         draw();
 
         // Loose detection
-        if (b.getY() <= 0 || b.getY() >= canvas.getHeight() - 100) {
+        if (b.getY() + 20 >= CANVASHEIGHT - CANVASHEIGHT / 6) {
             showLooseDialog();
             animation.stop();
+        } else if (b.getY() <= 0) {
+            b.setSpeedY(-0.2f);
         }
 
         for (Tube t : tubes) {
-            if (b.getY() <= t.getTop() && (t.getX() <= 420 && t.getX() >= 250)) showLooseDialog();
-            if (b.getY() + 20 >= t.getBottom() && (t.getX() <= 420 && t.getX() >= 250)) showLooseDialog();
+            if (b.getY() <= t.getTop() && (t.getX() <= CANVASWIDTH / 2 + 20 && t.getX() >= CANVASWIDTH / 2 - TUBEWIDTH)) showLooseDialog();
+            if (b.getY() + 20 >= t.getBottom() && (t.getX() <= CANVASWIDTH / 2 + 20 && t.getX() >= CANVASWIDTH / 2 - TUBEWIDTH)) showLooseDialog();
 
-            if (!t.hasCausedPoint() && t.getX() + 75 <= 400) {
+            if (!t.hasCausedPoint() && t.getX() + TUBEWIDTH / 2 <= CANVASWIDTH / 2) {
                 t.setCausedPoint(true);
                 points++;
             }
@@ -76,34 +87,37 @@ public class Game extends Application {
     }
 
     private void showLooseDialog() {
-        root.setTop(new Label("YOU'RE DED"));
-
+        animation.stop();
         Button restart = new Button("Retry");
         restart.setStyle("-fx-font-size: 50");
         restart.setOnAction(e -> {
             cleanup();
             restartGame();
+            stack.getChildren().remove(restart);
         });
 
-        root.setCenter(restart);
+        stack.getChildren().add(restart);
+        System.out.println("Game was lost with a score of : " + points);
     }
 
     private void cleanup() {
-        root.getChildren().remove(root.getTop());
-        b = new Bird(BIRDSPEED, 300);
-        canvas = new Canvas(800, 600);
+        b = new Bird(BIRDSPEED, CANVASHEIGHT / 2);
+        canvas = new Canvas(CANVASWIDTH, CANVASHEIGHT);
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            b.setSpeedY(BIRDSPEED + 1);
+            b.setSpeedY(BIRDSPEED);
+            System.out.println("Bird jumped!");
         });
         gc = canvas.getGraphicsContext2D();
         tubes = new ArrayList<>();
         points = 0;
+        System.out.println("Game was cleaned!");
     }
 
     private void restartGame() {
-        root.setCenter(canvas);
+        stack.getChildren().add(canvas);
         animation.play();
         generateTube();
+        System.out.println("Game successfully restarted!");
     }
 
     private void move() {
@@ -120,9 +134,9 @@ public class Game extends Application {
     private void draw() {
         //Background
         gc.setFill(LIGHTBLUE);
-        gc.fillRect(0, 0, 800, 500);
+        gc.fillRect(0, 0, CANVASWIDTH, CANVASHEIGHT);
         gc.setFill(GREEN);
-        gc.fillRect(0, 500, 800, 100);
+        gc.fillRect(0, CANVASHEIGHT / 6 * 5, CANVASWIDTH, CANVASHEIGHT / 6);
 
         //Tubes
         gc.setFill(DARKGREEN);
@@ -132,19 +146,28 @@ public class Game extends Application {
         }
 
         //Bird
+        gc.setFill(ORANGE);
+        gc.fillPolygon(new double[]{CANVASWIDTH / 2 + 20, CANVASWIDTH / 2 + 20, CANVASWIDTH / 2 + 40}, new double[]{b.getY() + 5, b.getY() + 18, b.getY() + 11.5}, 3);
         gc.setFill(YELLOW);
-        gc.fillOval(400, b.getY(), 20, 20);
+        gc.fillOval(CANVASWIDTH / 2, b.getY(), 30, 20);
+        gc.setFill(WHITE);
+        gc.fillOval(CANVASWIDTH / 2 + 15, b.getY() + 5, 10, 10);
+        gc.setFill(BLACK);
+        gc.fillOval(CANVASWIDTH / 2 + 18, b.getY() + 8, 5, 5);
+        gc.setFill(WHITE);
+        gc.fillOval(CANVASWIDTH / 2 - 5, b.getY() + 10, 10, 5);
 
 
         // Points
         gc.setFill(BLACK);
-        gc.fillText(points + "", 405, 50);
+        gc.fillText(points + "", CANVASWIDTH / 2 + 5, 50);
     }
 
     private void generateTube() {
-        float top = (float) Math.random() * 350;
-        Tube tube = new Tube(top, top + TUBEWIDTH, 800);
+        float top = (float) (Math.random() * (CANVASHEIGHT - (CANVASHEIGHT / 6 + TUBEWIDTH)));
+        Tube tube = new Tube(top, top + TUBEWIDTH, CANVASWIDTH);
         tubes.add(tube);
+        System.out.printf("Tube has been generated, Top : %f , Bottom : %f\n", top, top + TUBEWIDTH);
     }
 
     public static void main(String[] args) {

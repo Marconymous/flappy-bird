@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -60,7 +61,8 @@ public class Game extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-        primaryStage.setTitle("Flappy Bird");
+        primaryStage.setTitle("Flommpy Borb");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("icon.png")));
         primaryStage.show();
     }
 

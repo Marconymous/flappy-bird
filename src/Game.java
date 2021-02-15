@@ -6,6 +6,8 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -19,8 +21,8 @@ import static javafx.scene.paint.Color.*;
 public class Game extends Application {
     private static final float CANVASWIDTH = 800;
     private static final float CANVASHEIGHT = 600;
-    private static final float BIRDSPEED = CANVASHEIGHT / 200;
-    private static final float TUBEWIDTH = BIRDSPEED * 50;
+    private static final float BIRDSPEED = CANVASHEIGHT / 250;
+    private static final float TUBEWIDTH = CANVASHEIGHT / 6;
 
     private Bird b;
     private Canvas canvas;
@@ -30,7 +32,9 @@ public class Game extends Application {
     private final BorderPane root = new BorderPane();
     private final StackPane stack = new StackPane();
 
-    private final Timeline animation = new Timeline(new KeyFrame(Duration.millis(5), kf -> update()));
+    private final Timeline animation = new Timeline(new KeyFrame(Duration.millis(5), kf ->{
+        update();
+    }));
 
     public Game() {
         root.setCenter(stack);
@@ -46,6 +50,13 @@ public class Game extends Application {
         generateTube();
 
         Scene scene = new Scene(root, CANVASWIDTH, CANVASHEIGHT);
+
+        scene.setOnKeyPressed((KeyEvent event) -> {
+            System.out.println("Key Pressed");
+            if (event.getCode() == KeyCode.SPACE) {
+                b.setSpeedY(BIRDSPEED);
+            }
+        });
 
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
